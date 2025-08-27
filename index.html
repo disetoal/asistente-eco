@@ -1,74 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Asistente Eco Futurista ♻️</title>
-
-  <link rel="stylesheet" href="style.css" />
-  <!-- TensorFlow.js y Teachable Machine -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.4/dist/teachablemachine-image.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Asistente Futurista Eco</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <h1>♻️ Asistente Eco — Feria</h1>
-      <p class="sub">Clasifica residuos y responde preguntas — interfaz futurista</p>
+  <div class="app-container">
+    <header>
+      <h1>🤖 Asistente Futurista Eco</h1>
+      <p>Clasificación de residuos + Voz estilo Alexa</p>
     </header>
 
-    <section class="layout">
-      <!-- LEFT: Cámara + Foto -->
-      <div class="panel camera-panel">
-        <div class="cam-stage">
-          <div class="live-wrap">
-            <div id="webcam-wrap" class="webcam-wrap">
-              <!-- El canvas de tmImage.Webcam se insertará aquí -->
-              <div id="webcam-placeholder" class="webcam-placeholder">Cámara inactiva</div>
-            </div>
-            <button id="btn-capture" class="btn primary">📸 Capturar</button>
-          </div>
-
-          <div class="photo-wrap">
-            <div class="photo-label">Foto tomada</div>
-            <canvas id="photo-canvas" class="photo-canvas" width="640" height="480"></canvas>
-            <div id="photo-info" class="photo-info">Aún no has tomado una foto.</div>
-          </div>
-        </div>
-
-        <div class="controls-row">
-          <label>Umbral confianza: <span id="th-value">0.70</span></label>
-          <input id="threshold" type="range" min="0.5" max="0.95" step="0.01" value="0.70" />
-          <button id="btn-start" class="btn">▶️ Iniciar</button>
-          <button id="btn-stop" class="btn danger" disabled>⏹️ Detener</button>
-        </div>
-      </div>
-
-      <!-- RIGHT: Avatar + Q&A -->
-      <div class="panel assistant-panel">
-        <div class="avatar-card">
-          <canvas id="avatar-canvas" width="220" height="220" class="avatar-canvas"></canvas>
-          <div id="assistant-text" class="assistant-text">Hola — coloca un objeto y pulsa "Capturar"</div>
-        </div>
-
-        <div class="qa-card">
-          <input id="query-input" class="query-input" placeholder="Escribe o pulsa 🎤 para preguntar..." />
-          <div class="qa-actions">
-            <button id="btn-voice" class="btn secondary">🎙️</button>
-            <button id="btn-ask" class="btn">Enviar</button>
-          </div>
-
-          <div class="result-card">
-            <div><strong>Clasificación:</strong> <span id="result-class">—</span></div>
-            <div><strong>Confianza:</strong> <span id="result-prob">—</span></div>
-            <div id="result-tip" class="result-tip">Consejo aparecerá aquí.</div>
-          </div>
-        </div>
-
-        <div class="footer-note">Si usas TV Box con cámara USB, asegúrate de permitir permisos de cámara en el navegador.</div>
-      </div>
+    <!-- Cámara y foto -->
+    <section class="camera-section">
+      <video id="video" autoplay playsinline></video>
+      <button id="capture-btn">📸 Capturar</button>
+      <canvas id="canvas"></canvas>
+      <img id="photo" alt="Foto tomada"/>
     </section>
-  </main>
+
+    <!-- Avatar estilo Alexa -->
+    <section class="assistant-avatar">
+      <div class="circle"></div>
+      <p id="assistant-text">Esperando comando...</p>
+    </section>
+
+    <!-- Micrófono -->
+    <section class="mic-section">
+      <button id="mic-btn">🎤 Hablar</button>
+    </section>
+  </div>
 
   <script src="script.js"></script>
 </body>
