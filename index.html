@@ -1,80 +1,74 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>♻️ Asistente Ecológico con IA</title>
+  <title>Asistente Eco Futurista ♻️</title>
+
   <link rel="stylesheet" href="style.css" />
-  <!-- TensorFlow.js -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <!-- Teachable Machine (imagen) -->
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+  <!-- TensorFlow.js y Teachable Machine -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.4/dist/teachablemachine-image.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>♻️ Asistente Ecológico con IA</h1>
-    <p class="subtitle">Clasifica residuos (Orgánico / Inorgánico / No residuo) + Responde preguntas con voz</p>
-  </header>
+  <main class="shell">
+    <header class="topbar">
+      <h1>♻️ Asistente Eco — Feria</h1>
+      <p class="sub">Clasifica residuos y responde preguntas — interfaz futurista</p>
+    </header>
 
-  <section class="card">
-    <h2>Fuente de cámara</h2>
-    <div class="row">
-      <label><input type="radio" name="source" value="webcam" checked /> Webcam (USB/Android)</label>
-      <label><input type="radio" name="source" value="ip" /> Cámara IP</label>
-    </div>
+    <section class="layout">
+      <!-- LEFT: Cámara + Foto -->
+      <div class="panel camera-panel">
+        <div class="cam-stage">
+          <div class="live-wrap">
+            <div id="webcam-wrap" class="webcam-wrap">
+              <!-- El canvas de tmImage.Webcam se insertará aquí -->
+              <div id="webcam-placeholder" class="webcam-placeholder">Cámara inactiva</div>
+            </div>
+            <button id="btn-capture" class="btn primary">📸 Capturar</button>
+          </div>
 
-    <div id="ip-config" class="row hidden">
-      <input id="ip-url" type="text" placeholder="Ej: http://192.168.0.50:8080/shot.jpg" />
-      <button id="btn-test-ip" class="secondary">Probar IP</button>
-      <span id="ip-status" class="hint"></span>
-    </div>
+          <div class="photo-wrap">
+            <div class="photo-label">Foto tomada</div>
+            <canvas id="photo-canvas" class="photo-canvas" width="640" height="480"></canvas>
+            <div id="photo-info" class="photo-info">Aún no has tomado una foto.</div>
+          </div>
+        </div>
 
-    <div class="row">
-      <button id="btn-start">▶️ Iniciar detección</button>
-      <button id="btn-stop" class="danger" disabled>⏹️ Detener</button>
-      <label class="switch">
-        <input type="checkbox" id="speak-toggle" checked />
-        <span>Hablar resultados</span>
-      </label>
-    </div>
+        <div class="controls-row">
+          <label>Umbral confianza: <span id="th-value">0.70</span></label>
+          <input id="threshold" type="range" min="0.5" max="0.95" step="0.01" value="0.70" />
+          <button id="btn-start" class="btn">▶️ Iniciar</button>
+          <button id="btn-stop" class="btn danger" disabled>⏹️ Detener</button>
+        </div>
+      </div>
 
-    <div class="row">
-      <label for="threshold">Umbral de confianza: <span id="th-val">0.70</span></label>
-      <input id="threshold" type="range" min="0.5" max="0.95" step="0.01" value="0.70" />
-    </div>
+      <!-- RIGHT: Avatar + Q&A -->
+      <div class="panel assistant-panel">
+        <div class="avatar-card">
+          <canvas id="avatar-canvas" width="220" height="220" class="avatar-canvas"></canvas>
+          <div id="assistant-text" class="assistant-text">Hola — coloca un objeto y pulsa "Capturar"</div>
+        </div>
 
-    <div id="viewports">
-      <div id="webcam-container"></div>
-      <img id="ip-image" alt="IP frame" class="hidden" />
-    </div>
+        <div class="qa-card">
+          <input id="query-input" class="query-input" placeholder="Escribe o pulsa 🎤 para preguntar..." />
+          <div class="qa-actions">
+            <button id="btn-voice" class="btn secondary">🎙️</button>
+            <button id="btn-ask" class="btn">Enviar</button>
+          </div>
 
-    <div id="resultado" class="result">
-      <h3>Clasificación</h3>
-      <p id="clasificacion">Esperando…</p>
-      <p id="consejo"></p>
-      <details id="debug" class="debug">
-        <summary>Ver probabilidades</summary>
-        <pre id="probs">(sin datos)</pre>
-      </details>
-    </div>
-  </section>
+          <div class="result-card">
+            <div><strong>Clasificación:</strong> <span id="result-class">—</span></div>
+            <div><strong>Confianza:</strong> <span id="result-prob">—</span></div>
+            <div id="result-tip" class="result-tip">Consejo aparecerá aquí.</div>
+          </div>
+        </div>
 
-  <section class="card">
-    <h2>Preguntas del público</h2>
-    <div class="row">
-      <input type="text" id="pregunta" placeholder="Ej: ¿Cuánto tarda en degradarse una botella de plástico?" />
-      <button id="btn-ask">Enviar</button>
-      <button id="btn-voice" class="secondary">🎙️ Voz</button>
-      <span id="stt-status" class="hint"></span>
-    </div>
-    <div class="qa">
-      <p id="respuesta" class="answer">Haz tu pregunta para escuchar la respuesta.</p>
-    </div>
-  </section>
-
-  <footer>
-    <p>Consejo: para Cámara IP usa apps como <b>IP Webcam</b> (URL de foto: <code>/shot.jpg</code>) o <b>DroidCam</b>.</p>
-  </footer>
+        <div class="footer-note">Si usas TV Box con cámara USB, asegúrate de permitir permisos de cámara en el navegador.</div>
+      </div>
+    </section>
+  </main>
 
   <script src="script.js"></script>
 </body>
