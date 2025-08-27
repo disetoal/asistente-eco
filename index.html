@@ -1,35 +1,80 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Asistente Ecológico IA</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- TensorFlow.js (para clasificación de imágenes) -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>♻️ Asistente Ecológico con IA</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- TensorFlow.js -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
-  <!-- Teachable Machine Image (si entrenas un modelo personalizado) -->
+  <!-- Teachable Machine (imagen) -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
 </head>
 <body>
-  <h1>♻️ Asistente Ecológico con IA</h1>
+  <header>
+    <h1>♻️ Asistente Ecológico con IA</h1>
+    <p class="subtitle">Clasifica residuos (Orgánico / Inorgánico / No residuo) + Responde preguntas con voz</p>
+  </header>
 
-  <div id="camera-container">
-    <video id="webcam" autoplay playsinline width="300" height="200"></video>
-    <button onclick="capturarFoto()">📷 Tomar Foto</button>
-  </div>
+  <section class="card">
+    <h2>Fuente de cámara</h2>
+    <div class="row">
+      <label><input type="radio" name="source" value="webcam" checked /> Webcam (USB/Android)</label>
+      <label><input type="radio" name="source" value="ip" /> Cámara IP</label>
+    </div>
 
-  <canvas id="foto" width="300" height="200" style="display:none;"></canvas>
+    <div id="ip-config" class="row hidden">
+      <input id="ip-url" type="text" placeholder="Ej: http://192.168.0.50:8080/shot.jpg" />
+      <button id="btn-test-ip" class="secondary">Probar IP</button>
+      <span id="ip-status" class="hint"></span>
+    </div>
 
-  <div id="resultado">
-    <h2>Resultado:</h2>
-    <p id="clasificacion">Esperando imagen...</p>
-    <p id="consejo"></p>
-  </div>
+    <div class="row">
+      <button id="btn-start">▶️ Iniciar detección</button>
+      <button id="btn-stop" class="danger" disabled>⏹️ Detener</button>
+      <label class="switch">
+        <input type="checkbox" id="speak-toggle" checked />
+        <span>Hablar resultados</span>
+      </label>
+    </div>
 
-  <div id="preguntas">
-    <h2>Hazme una pregunta</h2>
-    <input type="text" id="pregunta" placeholder="Ej: ¿Cuánto tarda en degradarse el plástico?">
-    <button onclick="responderPregunta()">Enviar</button>
-  </div>
+    <div class="row">
+      <label for="threshold">Umbral de confianza: <span id="th-val">0.70</span></label>
+      <input id="threshold" type="range" min="0.5" max="0.95" step="0.01" value="0.70" />
+    </div>
+
+    <div id="viewports">
+      <div id="webcam-container"></div>
+      <img id="ip-image" alt="IP frame" class="hidden" />
+    </div>
+
+    <div id="resultado" class="result">
+      <h3>Clasificación</h3>
+      <p id="clasificacion">Esperando…</p>
+      <p id="consejo"></p>
+      <details id="debug" class="debug">
+        <summary>Ver probabilidades</summary>
+        <pre id="probs">(sin datos)</pre>
+      </details>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Preguntas del público</h2>
+    <div class="row">
+      <input type="text" id="pregunta" placeholder="Ej: ¿Cuánto tarda en degradarse una botella de plástico?" />
+      <button id="btn-ask">Enviar</button>
+      <button id="btn-voice" class="secondary">🎙️ Voz</button>
+      <span id="stt-status" class="hint"></span>
+    </div>
+    <div class="qa">
+      <p id="respuesta" class="answer">Haz tu pregunta para escuchar la respuesta.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Consejo: para Cámara IP usa apps como <b>IP Webcam</b> (URL de foto: <code>/shot.jpg</code>) o <b>DroidCam</b>.</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
