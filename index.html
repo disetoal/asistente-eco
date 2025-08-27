@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Asistente Ecológico IA</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- TensorFlow.js (para clasificación de imágenes) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <!-- Teachable Machine Image (si entrenas un modelo personalizado) -->
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image"></script>
+</head>
+<body>
+  <h1>♻️ Asistente Ecológico con IA</h1>
+
+  <div id="camera-container">
+    <video id="webcam" autoplay playsinline width="300" height="200"></video>
+    <button onclick="capturarFoto()">📷 Tomar Foto</button>
+  </div>
+
+  <canvas id="foto" width="300" height="200" style="display:none;"></canvas>
+
+  <div id="resultado">
+    <h2>Resultado:</h2>
+    <p id="clasificacion">Esperando imagen...</p>
+    <p id="consejo"></p>
+  </div>
+
+  <div id="preguntas">
+    <h2>Hazme una pregunta</h2>
+    <input type="text" id="pregunta" placeholder="Ej: ¿Cuánto tarda en degradarse el plástico?">
+    <button onclick="responderPregunta()">Enviar</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
