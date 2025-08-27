@@ -2,208 +2,68 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Asistente Eco — Futurista</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      overflow: hidden;
-    }
-    header {
-      margin: 20px;
-      font-size: 28px;
-      font-weight: bold;
-      color: #00e6ff;
-      text-shadow: 0px 0px 12px #00e6ff;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 25px rgba(0, 230, 255, 0.3);
-    }
-    video, img, canvas {
-      border: 2px solid #00e6ff;
-      border-radius: 12px;
-      max-width: 500px;
-      background: #000;
-    }
-    button {
-      padding: 12px 18px;
-      border: none;
-      border-radius: 8px;
-      background: #00e6ff;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    button:hover {
-      background: #00b8cc;
-    }
-    input, select {
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      font-size: 14px;
-    }
-    #asistente {
-      margin-top: 20px;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: radial-gradient(circle, #00e6ff, #003344);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 30px #00e6ff;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0% { box-shadow: 0 0 20px #00e6ff; }
-      50% { box-shadow: 0 0 60px #00e6ff; }
-      100% { box-shadow: 0 0 20px #00e6ff; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 </head>
 <body>
-  <header>🤖 Asistente Eco — Futurista</header>
 
-  <div class="container">
-    <label for="modo">Selecciona cámara:</label>
-    <select id="modo">
-      <option value="local">Cámara Local</option>
-      <option value="ip">Cámara IP</option>
-    </select>
-    <input type="text" id="ipUrl" placeholder="http://192.168.x.x:8080/video" style="display:none;">
-    <video id="camara" autoplay playsinline></video>
-    <img id="camaraIP" style="display:none;" />
-    <canvas id="fotoCanvas" width="400" height="300" style="display:none;"></canvas>
+  <div class="app">
+    <div class="top">
+      <h1>🤖 Asistente Eco — Futurista</h1>
+      <p id="model-status">Inicializando...</p>
+    </div>
+
+    <div class="main-grid">
+      <div class="card">
+        <h2>Análisis de Residuos</h2>
+        <div class="cam-stage">
+          <div id="video-wrap" class="video-wrap">
+            <div id="video-placeholder">Cámara inactiva</div>
+          </div>
+          <div class="controls-vert">
+            <button id="btn-start" class="btn primary">Iniciar Cámara</button>
+            <button id="btn-capture" class="btn secondary">📸 Capturar</button>
+          </div>
+        </div>
+        
+        <div class="photo-area">
+          <div class="photo-box">
+            <canvas id="photo-canvas" class="photo-canvas"></canvas>
+            <small id="photo-info" class="muted">Canvas de captura</small>
+          </div>
+          <div class="prediction-box">
+            <h3 id="result-class">--</h3>
+            <b id="result-prob">--</b>
+            <p id="result-tip" class="tip">Esperando análisis...</p>
+            <small class="muted">Probabilidades:</small>
+            <pre id="probs" class="muted"></pre>
+            <label class="muted" for="threshold">Confianza mínima: <span id="th-value">0.70</span></label>
+            <input type="range" id="threshold" min="0.1" max="0.99" step="0.05" value="0.7">
+          </div>
+        </div>
+      </div>
+
+      <div class="card avatar-card">
+        <h2>Asistente de Voz</h2>
+        <canvas id="avatar" class="avatar-canvas" width="240" height="240"></canvas>
+        <p id="assistant-text" class="assistant-text">Hola, pregunta sobre reciclaje o analiza un residuo.</p>
+        
+        <div class="qa-row">
+          <input type="text" id="query" placeholder="Escribe tu pregunta aquí...">
+          <div class="qa-buttons">
+            <button id="btn-voice" class="btn">🎙️</button>
+            <button id="btn-send" class="btn">▶️</button>
+          </div>
+        </div>
+      </div>
+    </div>
     
-    <button id="capturar">📸 Capturar Foto</button>
-    <p id="estado">Cámara inactiva</p>
+    <p class="footer-note">Proyecto para la feria de ciencias.</p>
   </div>
 
-  <div id="asistente">🔵</div>
-  <button id="hablar">🎙️ Preguntar</button>
-  <p id="respuesta"></p>
-
-  <script>
-    const video = document.getElementById("camara");
-    const imgIP = document.getElementById("camaraIP");
-    const canvas = document.getElementById("fotoCanvas");
-    const ctx = canvas.getContext("2d");
-    const estado = document.getElementById("estado");
-    const ipUrlInput = document.getElementById("ipUrl");
-    const modoSelect = document.getElementById("modo");
-
-    // --- Cambio entre local e IP ---
-    modoSelect.addEventListener("change", () => {
-      if (modoSelect.value === "local") {
-        ipUrlInput.style.display = "none";
-        imgIP.style.display = "none";
-        video.style.display = "block";
-        iniciarCamaraLocal();
-      } else {
-        ipUrlInput.style.display = "block";
-        video.style.display = "none";
-        detenerCamaraLocal();
-      }
-    });
-
-    // --- Cámara Local ---
-    async function iniciarCamaraLocal() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        estado.textContent = "Cámara local activa ✅";
-      } catch (err) {
-        estado.textContent = "Error accediendo a la cámara 😢";
-      }
-    }
-    function detenerCamaraLocal() {
-      if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-      }
-      estado.textContent = "Cámara IP esperando URL";
-    }
-
-    // --- Cámara IP ---
-    ipUrlInput.addEventListener("change", () => {
-      const url = ipUrlInput.value;
-      if (url) {
-        imgIP.src = url;
-        imgIP.style.display = "block";
-        estado.textContent = "Cámara IP activa ✅";
-      }
-    });
-
-    // --- Captura Foto ---
-    document.getElementById("capturar").addEventListener("click", () => {
-      if (modoSelect.value === "local") {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      } else {
-        ctx.drawImage(imgIP, 0, 0, canvas.width, canvas.height);
-      }
-      canvas.style.display = "block";
-      estado.textContent = "Foto capturada 📷";
-    });
-
-    // --- Asistente de Voz estilo Alexa ---
-    const hablarBtn = document.getElementById("hablar");
-    const respuestaP = document.getElementById("respuesta");
-
-    const reconocimiento = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const synth = window.speechSynthesis;
-
-    if (reconocimiento) {
-      const recog = new reconocimiento();
-      recog.lang = "es-ES";
-
-      hablarBtn.addEventListener("click", () => {
-        recog.start();
-        estado.textContent = "🎤 Escuchando...";
-      });
-
-      recog.onresult = (event) => {
-        const texto = event.results[0][0].transcript;
-        respuestaP.textContent = "Tú: " + texto;
-        estado.textContent = "Procesando...";
-
-        let respuesta = "No entendí bien 🤔";
-        if (texto.toLowerCase().includes("hola")) {
-          respuesta = "¡Hola! Soy tu asistente futurista 🤖";
-        } else if (texto.toLowerCase().includes("basura")) {
-          respuesta = "Recuerda separar en orgánica, reciclable y no reciclable ♻️";
-        } else if (texto.toLowerCase().includes("adiós")) {
-          respuesta = "Hasta luego 👋";
-        }
-
-        respuestaP.textContent = "Asistente: " + respuesta;
-        const voz = new SpeechSynthesisUtterance(respuesta);
-        voz.lang = "es-ES";
-        synth.speak(voz);
-        estado.textContent = "Listo ✅";
-      };
-    } else {
-      hablarBtn.disabled = true;
-      respuestaP.textContent = "❌ Tu navegador no soporta reconocimiento de voz";
-    }
-
-    // Iniciar por defecto la cámara local
-    iniciarCamaraLocal();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
