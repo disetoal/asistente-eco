@@ -1,4 +1,4 @@
-// script.js - Versión Final con Secuencia de Video y Explicación de IA
+// script.js - Versión Final Corregida con Guion Local y Voz Limpia
 
 // --- Referencias a los DOM Elements ---
 const cameraContainer = document.getElementById("camera-container");
@@ -31,22 +31,34 @@ const videoSequence = [
     'video/video_parte2.mp4'
 ];
 
+// --- ¡NUEVO GUION CORREGIDO! ---
+// Este es el texto que el asistente leerá. Es texto puro, sin formato.
+const COMPOST_EXPLANATION_SCRIPT = `
+    ¡Claro! Te explico nuestro procedimiento. Primero, construimos una compostera casera con una botella grande, haciéndole agujeros en la base para que drene. 
+    Segundo, la llenamos por capas. Pusimos una capa de material húmedo, como cáscaras de plátano y restos de verduras. Luego, una capa de material seco, como hojas y trocitos de cartón. Repetimos este proceso varias veces. 
+    Tercero, mantuvimos la mezcla húmeda, como una esponja escurrida. Después de unas semanas, los microorganismos descomponen todo y empiezan a soltar un líquido oscuro por los agujeros. 
+    Finalmente, recolectamos ese líquido. Ese es nuestro té de compost. Lo diluimos con diez partes de agua, ¡y listo! Un súper fertilizante, natural y potente, creado directamente a partir de nuestra basura.
+`;
+
+
 const CLASSIFICATION_NAMES = {
     "Orgánico (cáscaras, frutas, restos de comida, pape": "Orgánico 🌱",
     "Inorganico": "Inorgánico ♻️",
     "No residuo / Persona / Fondo": ""
 };
 
-// --- Funciones de Lógica Principal ---
+
+// --- Función de Carga Principal ---
 async function init() {
     drawAvatarCenter();
     try {
         model = await tmImage.load(URL + "model.json", URL + "metadata.json");
         if (supportsSpeechRecognition) initSpeechRecognition();
-        speak("Hola. Estoy listo. Puedes activar la cámara, el micrófono o ver la historia de mi experimento.");
+        speak("Hola. Estoy listo para la feria. Puedes activar la cámara, el micrófono o ver la historia de mi experimento.");
     } catch (error) { console.error("Error cargando modelo:", error); }
 }
 
+// --- Lógica para Manejar las Vistas y la Secuencia de Video ---
 function toggleExperimentView() {
     const isExperimentVisible = !experimentModule.classList.contains('hidden');
     if (isExperimentVisible) {
@@ -66,12 +78,12 @@ function startVideoSequence() {
     videoSubtitle.innerText = "Parte 1: El Súper Poder de la Basura";
     speak("Comienza la historia de nuestro compost...");
     videoPlayer.src = videoSequence[0];
-    videoPlayer.load(); // Cargar el nuevo video
+    videoPlayer.load();
     videoPlayer.play();
     videoPlayer.addEventListener('ended', handleVideoEnd);
 }
 
-async function handleVideoEnd() {
+function handleVideoEnd() {
     const currentSrc = videoPlayer.currentSrc;
     if (currentSrc.includes(videoSequence[0].split('/').pop())) {
         videoSubtitle.innerText = "Parte 2: ¡La Magia en Acción!";
@@ -80,16 +92,18 @@ async function handleVideoEnd() {
         videoPlayer.load();
         videoPlayer.play();
     } else if (currentSrc.includes(videoSequence[1].split('/').pop())) {
-        videoSubtitle.innerText = "¡Y así es como lo hicimos! Ahora Eco nos explica el proceso...";
+        videoSubtitle.innerText = "Ahora, Eco te cuenta el secreto de la Súper-Tierra...";
         videoPlayer.removeEventListener('ended', handleVideoEnd);
-        const questionForAI = "explícame paso a paso y de forma sencilla como un niño, cómo se hace el té de compost casero a partir de residuos orgánicos.";
-        const response = await askGemini(questionForAI);
-        assistantText.innerText = response;
-        speak(response);
+        
+        // --- AQUÍ ESTÁ LA CORRECCIÓN ---
+        // Llamamos a nuestro guion local y limpio.
+        assistantText.innerText = COMPOST_EXPLANATION_SCRIPT;
+        speak(COMPOST_EXPLANATION_SCRIPT);
     }
 }
 
-async function setupWebcam() {
+// --- Lógica de la Cámara y Predicción en Vivo ---
+async function setupWebcam() { 
     isPredicting = !isPredicting;
     if (isPredicting) {
         const constraints = { video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'environment' } };
@@ -112,41 +126,27 @@ async function setupWebcam() {
         classificationSubtitle.innerText = '';
     }
 }
-
-function loop() {
+function loop() { 
     if (!isPredicting) return;
     const now = performance.now();
-    if (now - lastPredictionTime > 400) {
-        lastPredictionTime = now;
-        predictLive();
-    }
+    if (now - lastPredictionTime > 400) { lastPredictionTime = now; predictLive(); }
     window.requestAnimationFrame(loop);
 }
-
-async function predictLive() {
+async function predictLive() { 
     if (!model || !videoElement) return;
     const prediction = await model.predict(videoElement);
     const bestPrediction = prediction.sort((a, b) => b.probability - a.probability)[0];
     classificationSubtitle.innerText = CLASSIFICATION_NAMES[bestPrediction.className] || "";
-    if (bestPrediction.className === currentStablePrediction) {
-        predictionCounter++;
-    } else {
-        currentStablePrediction = bestPrediction.className;
-        predictionCounter = 1;
-        lastSpokenPrediction = "";
-    }
+    if (bestPrediction.className === currentStablePrediction) { predictionCounter++; } else { currentStablePrediction = bestPrediction.className; predictionCounter = 1; lastSpokenPrediction = ""; }
     if (predictionCounter >= 3 && currentStablePrediction !== lastSpokenPrediction) {
         lastSpokenPrediction = currentStablePrediction;
-        if (currentStablePrediction !== "No residuo / Persona / Fondo") {
-            speak(CLASSIFICATION_NAMES[currentStablePrediction]);
-        }
+        if (currentStablePrediction !== "No residuo / Persona / Fondo") { speak(CLASSIFICATION_NAMES[currentStablePrediction]); }
     }
 }
 
-function drawAvatarCenter() { avatarCtx.clearRect(0, 0, avatarCanvas.width, avatarCanvas.height); avatarCtx.beginPath(); avatarCtx.arc(avatarCanvas.width / 2, avatarCanvas.height / 2, avatarCanvas.width / 2 * 0.8, 0, 2 * Math.PI); avatarCtx.fillStyle = "var(--accent-cyan)"; avatarCtx.shadowColor = "var(--accent-cyan)"; avatarCtx.shadowBlur = 10; avatarCtx.fill(); }
-
+// --- Funciones del Avatar, Voz y Gemini ---
+function drawAvatarCenter() { avatarCtx.clearRect(0,0,avatarCanvas.width,avatarCanvas.height);avatarCtx.beginPath();avatarCtx.arc(avatarCanvas.width/2,avatarCanvas.height/2,avatarCanvas.width/2*.8,0,2*Math.PI);avatarCtx.fillStyle="var(--accent-cyan)";avatarCtx.shadowColor="var(--accent-cyan)";avatarCtx.shadowBlur=10;avatarCtx.fill(); }
 function speak(text) { if (!supportsSpeechSynthesis || !text) return; if (synth.speaking) synth.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = "es-ES"; utterance.rate = 1.1; utterance.onstart = () => avatarWaves.classList.add("speaking"); utterance.onend = () => avatarWaves.classList.remove("speaking"); synth.speak(utterance); }
-
 function initSpeechRecognition() {
     recognition = new webkitSpeechRecognition();
     recognition.continuous = true;
@@ -168,7 +168,7 @@ function initSpeechRecognition() {
 }
 
 async function askGemini(query) {
-    const API_KEY = "PEGA_TU_API_KEY_DE_GOOGLE_AI_STUDIO_AQUÍ";
+    const API_KEY = "AIzaSyBK6FXttUXKKcyK21UCd4IxKwkkS_3-h-Y";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
     assistantText.innerText = "Pensando...";
     avatarWaves.classList.add("listening");
@@ -204,6 +204,7 @@ async function processQuery(query) {
     speak(response);
 }
 
+// --- Event Listeners ---
 btnStart.addEventListener("click", setupWebcam);
 btnVoice.addEventListener("click", () => {
     isAlwaysListening = !isAlwaysListening;
