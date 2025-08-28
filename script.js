@@ -49,9 +49,9 @@ let model = null; // tmImage model if present
 
 // Tips basicos
 const TIPS = {
-  "Orgánico": "Orgánico ✅ — Puedes compostarlo y convertirlo en abono.",
-  "Inorgánico": "Inorgánico ♻️ — Reutilízalo o llévalo a reciclaje.",
-  "No residuo": "No residuo 🚫 — Coloca un residuo frente a la cámara para analizar."
+  "Orgánico (cáscaras, frutas, restos de comida, pape": "Orgánico ✅ — Puedes compostarlo y convertirlo en abono.",
+  "Inorganico": "Inorgánico ♻️ — Reutilízalo o llévalo a reciclaje.",
+  "No residuo / Persona / Fondo": "No residuo 🚫 — Coloca un residuo frente a la cámara para analizar."
 };
 
 // ---- Avatar draw ----
