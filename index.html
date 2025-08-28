@@ -1,69 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asistente Eco — Futurista</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente Eco — Proyecto Final</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
 </head>
 <body>
-
-  <div class="app">
-    <div class="top">
-      <h1>🤖 Asistente Eco — Futurista</h1>
-      <p id="model-status">Inicializando...</p>
+    <div id="camera-container">
+        <div id="video-wrap">
+            <div id="video-placeholder">ECO</div>
+        </div>
     </div>
 
-    <div class="main-grid">
-      <div class="card">
-        <h2>Análisis de Residuos</h2>
-        <div class="cam-stage">
-          <div id="video-wrap" class="video-wrap">
-            <div id="video-placeholder">Cámara inactiva</div>
-          </div>
-          <div class="controls-vert">
-            <button id="btn-start" class="btn primary">Iniciar Cámara</button>
-            <button id="btn-capture" class="btn secondary">📸 Capturar</button>
-          </div>
-        </div>
-        
-        <div class="photo-area">
-          <div class="photo-box">
-            <canvas id="photo-canvas" class="photo-canvas"></canvas>
-            <small id="photo-info" class="muted">Canvas de captura</small>
-          </div>
-          <div class="prediction-box">
-            <h3 id="result-class">--</h3>
-            <b id="result-prob">--</b>
-            <p id="result-tip" class="tip">Esperando análisis...</p>
-            <small class="muted">Probabilidades:</small>
-            <pre id="probs" class="muted"></pre>
-            <label class="muted" for="threshold">Confianza mínima: <span id="th-value">0.70</span></label>
-            <input type="range" id="threshold" min="0.1" max="0.99" step="0.05" value="0.7">
-          </div>
-        </div>
-      </div>
+    <div id="activation-overlay"></div>
 
-      <div class="card avatar-card">
-        <h2>Asistente de Voz</h2>
-        <canvas id="avatar" class="avatar-canvas" width="240" height="240"></canvas>
-        <p id="assistant-text" class="assistant-text">Hola, pregunta sobre reciclaje o analiza un residuo.</p>
-        
-        <div class="qa-row">
-          <input type="text" id="query" placeholder="Escribe tu pregunta aquí...">
-          <div class="qa-buttons">
-            <button id="btn-voice" class="btn">🎙️</button>
-            <button id="btn-send" class="btn">▶️</button>
-          </div>
+    <div id="experiment-module" class="hidden">
+        <div class="card experiment-card">
+            <h2 id="experiment-title">🌱 La Historia de la Súper-Tierra 🌱</h2>
+            <div class="video-explanation-container">
+                <video id="explanation-video" controls>
+                    <source src="" type="video/mp4">
+                    Tu navegador no soporta el elemento de video.
+                </video>
+            </div>
+            <p id="video-subtitle" class="conclusion">
+                Presiona el botón 🌱 para comenzar la historia.
+            </p>
         </div>
-      </div>
     </div>
-    
-    <p class="footer-note">Proyecto para la feria de ciencias.</p>
-  </div>
 
-  <script src="script.js"></script>
+    <div id="bottom-bar">
+        <div class="avatar-container">
+            <canvas id="avatar-canvas" width="120" height="120"></canvas>
+            <div id="avatar-waves"></div>
+        </div>
+        <div class="subtitle-container">
+            <p id="assistant-text">Activa el micrófono y di "Eco" para empezar...</p>
+            <h2 id="classification-subtitle"></h2>
+        </div>
+    </div>
+
+    <div id="controls-corner">
+        <button id="btn-experiment" class="btn" title="Ver Videos del Proyecto">🌱</button>
+        <button id="btn-start" class="btn" title="Iniciar/Detener Análisis en Vivo">📷</button>
+        <button id="btn-voice" class="btn" title="Activar/Desactivar Micrófono">🎙️</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
