@@ -250,7 +250,7 @@ btnCapture.addEventListener('click', async () => {
   const ctx = photoCanvas.getContext('2d');
   ctx.drawImage(localVideoEl, 0, 0, cw, ch);
   const dataUrl = photoCanvas.toDataURL('image/png');
-  photoImg.src = dataUrl;
+  // photoImg.src = dataUrl; // Comentamos o eliminamos esta línea
   photoInfo.innerText = 'Foto capturada';
 
   // si hay modelo, predecir sobre canvas (tmImage accepts <canvas>)
